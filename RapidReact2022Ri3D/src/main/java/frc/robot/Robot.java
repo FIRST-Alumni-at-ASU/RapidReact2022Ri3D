@@ -4,7 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -19,6 +21,11 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  private final XboxController m_xbox = new XboxController(Variables.CONTROLLER_XBOX);
+
+  private final DriveTrain m_drive = new DriveTrain();
+  private final Tray m_tray = new Tray();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -78,11 +85,21 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    // drive the robot
+    m_drive.driveArcade(m_xbox.getLeftY(), -m_xbox.getRightX(), Variables.INPUT_SQUARED); // take the negative of the X input because pushing right is negative
+
+    // command the servo based off of buttons
+    if (m_xbox.getAButton()) m_tray.setPercent(Variables.TRAY_OPEN);
+    else if (m_xbox.getBButton()) m_tray.setPercent(Variables.TRAY_CLOSED);
+    else if (m_xbox.getXButton()) m_tray.setPercent(m_xbox.getRightTriggerAxis());
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    m_drive.commandStop();
+  }
 
   /** This function is called periodically when disabled. */
   @Override
